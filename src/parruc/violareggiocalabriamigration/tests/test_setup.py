@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """Setup tests for this package."""
-from parruc.violareggiocalabriamigration.testing import PARRUC_VIOLAREGGIOCALABRIAMIGRATION_INTEGRATION_TESTING  # noqa
-from plone import api
-
 import unittest
+
+from parruc.violareggiocalabriamigration.testing import \
+    PARRUC_VIOLAREGGIOCALABRIAMIGRATION_INTEGRATION_TESTING  # noqa
+from plone import api
 
 
 class TestSetup(unittest.TestCase):
@@ -26,7 +27,8 @@ class TestSetup(unittest.TestCase):
         from parruc.violareggiocalabriamigration.interfaces import (
             IParrucViolareggiocalabriamigrationLayer)
         from plone.browserlayer import utils
-        self.assertIn(IParrucViolareggiocalabriamigrationLayer, utils.registered_layers())
+        self.assertIn(IParrucViolareggiocalabriamigrationLayer,
+                      utils.registered_layers())
 
 
 class TestUninstall(unittest.TestCase):
@@ -36,15 +38,19 @@ class TestUninstall(unittest.TestCase):
     def setUp(self):
         self.portal = self.layer['portal']
         self.installer = api.portal.get_tool('portal_quickinstaller')
-        self.installer.uninstallProducts(['parruc.violareggiocalabriamigration'])
+        self.installer.uninstallProducts(
+            ['parruc.violareggiocalabriamigration'])
 
     def test_product_uninstalled(self):
-        """Test if parruc.violareggiocalabriamigration is cleanly uninstalled."""
+        """Test if parruc.violareggiocalabriamigration
+           is cleanly uninstalled."""
         self.assertFalse(self.installer.isProductInstalled(
             'parruc.violareggiocalabriamigration'))
 
     def test_browserlayer_removed(self):
         """Test that IParrucViolareggiocalabriamigrationLayer is removed."""
-        from parruc.violareggiocalabriamigration.interfaces import IParrucViolareggiocalabriamigrationLayer
+        from parruc.violareggiocalabriamigration.interfaces import\
+            IParrucViolareggiocalabriamigrationLayer
         from plone.browserlayer import utils
-        self.assertNotIn(IParrucViolareggiocalabriamigrationLayer, utils.registered_layers())
+        self.assertNotIn(IParrucViolareggiocalabriamigrationLayer,
+                         utils.registered_layers())
