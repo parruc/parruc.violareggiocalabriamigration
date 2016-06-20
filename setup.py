@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 """Installer for the parruc.violareggiocalabriamigration package."""
 
-from setuptools import find_packages
-from setuptools import setup
-
+from setuptools import find_packages, setup
 
 long_description = '\n\n'.join([
     open('README.rst').read(),
@@ -42,6 +40,13 @@ setup(
         'Products.GenericSetup>=1.8.2',
         'setuptools',
         'z3c.jbot',
+        'requests',
+        'BeautifulSoup',
+        'collective.transmogrifier',
+        'plone.app.transmogrifier',
+        'transmogrify.dexterity',
+        'transmogrify.htmlcontentextractor',
+        'transmogrify.webcrawler',
     ],
     extras_require={
         'test': [
