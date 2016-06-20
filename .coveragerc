@@ -1,0 +1,6 @@
+[report]
+include =
+    src/parruc/*
+omit =
+    */test*
+    */upgrades/*
