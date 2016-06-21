@@ -2,7 +2,8 @@
 *.egg-info
 *.log
 *.mo
-*.py?
+*.pyc
+*.pyo
 *.swp
 # dirs
 bin/
