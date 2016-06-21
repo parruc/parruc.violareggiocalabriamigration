@@ -60,6 +60,9 @@ setup(
         ],
     },
     entry_points="""
+    # -*- Entry points: -*-
+    [console_scripts]
+    export_violareggiocalabria = parruc.violareggiocalabriamigration.scripts.export_news:main
     [z3c.autoinclude.plugin]
     target = plone
     """,

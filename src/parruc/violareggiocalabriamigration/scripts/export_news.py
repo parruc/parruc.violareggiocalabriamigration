@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-
+import re
 import argparse
 import json
 import logging
@@ -11,6 +11,7 @@ import sys
 import requests
 
 from bs4 import BeautifulSoup
+from datetime import date
 from plone.i18n.normalizer import idnormalizer
 
 logger = logging.getLogger("unibo.violareggiocalabriamigration.export")
@@ -40,6 +41,10 @@ TAKEN_PATHS = []
 REDIRECTS = {}
 BASE_URL = "http://www.violareggiocalabria.it"
 COUNTER = 0
+MONTHS = ["gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
+          "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"]
+months = "|".join(MONTHS)
+date_re = re.compile(".*?([0-9]{1,2})\s*(" + months + ")\s*([0-9]{4}).*")
 normalize = idnormalizer.normalize
 
 
@@ -58,14 +63,8 @@ def save_json(export_path, data):
     if not data:
         return
     data["count"] = COUNTER
-    if "parser" in data:
-        data.pop("parser")
-    file_name = data["it"]["path"]
-    file_name = file_name.lstrip("/").replace("/", "-").replace("%20", "-")
-    file_name += ".json"
+    file_name = normalize(data["title"].strip()) + ".json"
     path = os.sep.join((export_path, file_name))
-    if file_name.startswith("amici-di-federico-zeri"):
-        return
     with open(path, 'w') as f:
         json.dump(data, f)
     COUNTER += 1
@@ -99,34 +98,51 @@ def prepare_dict(url):
     if not req:
         return
     parser = BeautifulSoup(req.content, 'html.parser')
-    article = parser.select("div.item-page")
-    title = article.select("h2.art-postheader").text
-    img = parser.find("img", {"class": "art-postheader"})
+    article = parser.select("div.item-page")[0]
+    title = article.select("h2.art-postheader")[0].text
+    img = parser.find("img")
+    if len(img) > 0:
+        img = img[0]
     img_src = ""
     img_alt = ""
-    if "src" in img.attrs:
+    if img and "src" in img.attrs:
         img_src = get_absolute_link(img.get("src"))
-    if "alt" in img.attrs:
+    if img and "alt" in img.attrs:
         img_alt = img.get("alt")
-    text = article.findAll("p", text=True)
-    return {"title": title, "img_src": img_src, "img_alt": img_alt,
-            "text": text, "url": req.url}
+    text = ""
+    for paragraph in article.findAll("p")[:-1]:
+        paragraph_text = paragraph.get_text().strip()
+        if paragraph_text:
+            text += "<p>" + paragraph_text + "</p>"
+    last_p = article.findAll("p")[-1].get_text()
+    date_match = date_re.match(last_p.lower())
+    mydate = ""
+    if date_match:
+        day = int(date_match.group(1))
+        month = date_match.group(2)
+        year = int(date_match.group(3))
+        month = MONTHS.index(month) + 1
+        mydate = date(year, month, day)
+    else:
+        logger.warning("%s not a date" % last_p)
+        text += "<p>" + last_p + "</p>"
+    return {"id":normalize(title), "title": title, "img_src": img_src,
+            "img_alt": img_alt, "text": text, "url": req.url, "date": mydate}
 
 
 def export_news(offset, limit, force, export_path):
     out = []
     req = get_url_checking("http://www.violareggiocalabria.it/sitemap.xml")
-    parser = BeautifulSoup(req.content, 'xml.parser')
+    parser = BeautifulSoup(req.content, 'xml')
     url_tags = parser.findAll('url')
+    if not os.path.exists(export_path):
+        os.makedirs(export_path)
     for url_tag in url_tags:
         url = url_tag.find('loc').string
         if "catid=7:news" in url and "Itemid=" in url:
             res = prepare_dict(url)
             if res:
-                out.append(res)
-    if not os.path.exists(export_path):
-            os.makedirs(export_path)
-    save_json(export_path, out)
+                save_json(export_path, res)
 
 
 def main(*args, **kwargs):
