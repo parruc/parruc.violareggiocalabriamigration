@@ -17,4 +17,11 @@
       directory="static"
       />
 
+      <browser:page
+        for="Products.CMFPlone.interfaces.siteroot.IPloneSiteRoot"
+        name="violareggiocalabriaimport"
+        class=" .import.ImportViolaReggiocalabria"
+        permission="cmf.ManagePortal"
+      />
+
 </configure>

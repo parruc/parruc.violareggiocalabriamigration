@@ -129,7 +129,12 @@ def export_news(offset, limit, force, export_path):
         link = columns[0].select("a")[0]
         url = get_absolute_link(link["href"])
         res = prepare_dict(url)
-        res["title"] = link.text.strip()
+        if not res:
+            import ipdb; ipdb.set_trace()
+            return
+        title = link.text.strip()
+        res["title"] = title
+        res["id"] = normalize(title, max_length=200)
         res["date"] = columns[1].text.strip()
         res["hits"] = columns[2].text.strip()
         save_json(export_path, res)
