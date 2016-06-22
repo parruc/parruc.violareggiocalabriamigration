@@ -5,18 +5,17 @@ import argparse
 import json
 import logging
 import os
-import re
 import shutil
 import sys
-from datetime import date
+from datetime import datetime
 
 import requests
 
 from bs4 import BeautifulSoup
 from plone.i18n.normalizer import idnormalizer
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("unibo.violareggiocalabriamigration.export")
-logging.basicConfig(level=logging.WARNING)
 
 usage = "usage: %prog [options]"
 parser = argparse.ArgumentParser(usage=usage, description=__doc__)
@@ -42,10 +41,6 @@ TAKEN_PATHS = []
 REDIRECTS = {}
 BASE_URL = "http://www.violareggiocalabria.it"
 COUNTER = 0
-MONTHS = ["gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
-          "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"]
-months = "|".join(MONTHS)
-date_re = re.compile(".*?([0-9]{1,2})\s*(" + months + ")\s*([0-9]{4}).*")
 normalize = idnormalizer.normalize
 
 
@@ -78,8 +73,8 @@ def get_url_checking(url):
     if url in VISITED_PAGES:
         logger.info("Link '%s' already visited", url)
         return None
-    req = requests.get(url)
     try:
+        req = requests.get(url)
         req.raise_for_status()
     except:
         logger.warning("Found a broken link to '%s'", url)
@@ -130,12 +125,13 @@ def export_news(offset, limit, force, export_path):
         url = get_absolute_link(link["href"])
         res = prepare_dict(url)
         if not res:
-            import ipdb; ipdb.set_trace()
             return
         title = link.text.strip()
+        date_str = columns[1].text.strip()
+        iso_date = datetime.strptime(date_str, "%d-%m-%y").isoformat()
         res["title"] = title
         res["id"] = normalize(title, max_length=200)
-        res["date"] = columns[1].text.strip()
+        res["date"] = iso_date
         res["hits"] = columns[2].text.strip()
         save_json(export_path, res)
 

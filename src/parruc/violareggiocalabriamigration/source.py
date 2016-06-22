@@ -2,6 +2,7 @@
 import json
 import logging
 import os.path
+from datetime import datetime
 
 import requests
 from zope.interface import classProvides, implements
@@ -44,7 +45,6 @@ class Source(object):
 
         for dir_path, dir_names, file_names in os.walk(self.directory):
             file_names.sort()
-#            file_names.reverse()
             for file_name in file_names:
                 file_path = os.path.join(dir_path, file_name)
                 with open(file_path, 'rb') as input_file:
@@ -54,5 +54,23 @@ class Source(object):
                 res['_path'] = u"/news/" + metadata["id"]
                 res["title"] = unicode(metadata["title"])
                 res["text"] = unicode(metadata["text"])
-                res["effectiveDate"] = metadata["date"]
+                res["date"] = datetime.strptime(metadata["date"],
+                                                '%Y-%m-%dT%H:%M:%S')
+                count = 0
+                for image in metadata["images"]:
+                    if count > 0:
+                        import ipdb; ipdb.set_trace()
+                    count += 1
+                    data = None
+                    url = image["src"]
+                    try:
+                        req = requests.get(url)
+                        req.raise_for_status()
+                    except:
+                        logger.warning("Found a broken image in '%s'", url)
+                        return
+                    data = req.content
+                    filename = url.split("/")[-1]
+                    res['image'] = {"data": data, "filename": filename}
+
                 yield res
