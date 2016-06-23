@@ -7,7 +7,6 @@ import logging
 import os
 import shutil
 import sys
-from datetime import datetime
 
 import requests
 
@@ -67,6 +66,7 @@ def save_json(export_path, data):
 
 
 def get_url_checking(url):
+    url = get_absolute_link(url)
     if not url:
         logger.warning("Found an empty link to '%s'", url)
         return None
@@ -113,27 +113,36 @@ def prepare_dict(url):
 
 
 def export_news(offset, limit, force, export_path):
-    data = {"limit": "0"}
-    req = requests.post("http://www.violareggiocalabria.it/news/news", data)
-    parser = BeautifulSoup(req.content, 'html.parser')
-    if not os.path.exists(export_path):
-        os.makedirs(export_path)
-    rows = parser.select("table.category tbody tr")
-    for row in rows:
-        columns = row.select("td")
-        link = columns[0].select("a")[0]
-        url = get_absolute_link(link["href"])
-        res = prepare_dict(url)
-        if not res:
-            return
-        title = link.text.strip()
-        date_str = columns[1].text.strip()
-        iso_date = datetime.strptime(date_str, "%d-%m-%y").isoformat()
-        res["title"] = title
-        res["id"] = normalize(title, max_length=200)
-        res["date"] = iso_date
-        res["hits"] = columns[2].text.strip()
-        save_json(export_path, res)
+    for (dirpath, dirnames, filenames) in os.walk("to_import"):
+        for filename in filenames:
+            with open(os.sep.join((dirpath, filename))) as opened_file:
+                parser = BeautifulSoup(opened_file, 'xml')
+                if not os.path.exists(export_path):
+                    os.makedirs(export_path)
+                rows = parser.find_all("content")
+                for row in rows:
+                    print "row"
+                    title = row.find("title").text
+                    cat = row.find("catid").text
+                    alias = row.find("alias").text
+                    pub_date = row.find("publish_up").text
+                    mod_date = row.find("modified").text
+                    featured = bool(int(row.find("featured").text))
+                    hits = row.find("hits").text
+                    if mod_date == "0000-00-00 00:00:00":
+                        mod_date = pub_date
+                    url = "/".join(BASE_URL, cat, cat, alias)
+                    res = prepare_dict(url)
+                    res["title"] = title
+                    res["id"] = normalize(title, max_length=200)
+                    res["category"] = cat
+                    res["pub_date"] = pub_date
+                    res["mod_date"] = mod_date
+                    res["featured"] = featured
+                    res["hits"] = hits
+                    save_json(export_path, res)
+
+        break
 
 
 def main(*args, **kwargs):

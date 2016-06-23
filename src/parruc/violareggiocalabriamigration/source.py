@@ -55,12 +55,8 @@ class Source(object):
                 res["title"] = unicode(metadata["title"])
                 res["text"] = unicode(metadata["text"])
                 res["date"] = datetime.strptime(metadata["date"],
-                                                '%Y-%m-%dT%H:%M:%S')
-                count = 0
+                                                '%Y-%m-%d %H:%M:%S')
                 for image in metadata["images"]:
-                    if count > 0:
-                        import ipdb; ipdb.set_trace()
-                    count += 1
                     data = None
                     url = image["src"]
                     try:
