@@ -7,6 +7,7 @@ import logging
 import os
 import shutil
 import sys
+from HTMLParser import HTMLParser
 
 import requests
 
@@ -121,25 +122,26 @@ def export_news(offset, limit, force, export_path):
                     os.makedirs(export_path)
                 rows = parser.find_all("content")
                 for row in rows:
-                    print "row"
                     title = row.find("title").text
-                    cat = row.find("catid").text
-                    alias = row.find("alias").text
+                    url = row.find("url").text.replace("/administrator", "")
+                    html_parser = HTMLParser()
+                    url = html_parser.unescape(html_parser.unescape(url))
                     pub_date = row.find("publish_up").text
                     mod_date = row.find("modified").text
                     featured = bool(int(row.find("featured").text))
-                    hits = row.find("hits").text
                     if mod_date == "0000-00-00 00:00:00":
                         mod_date = pub_date
-                    url = "/".join(BASE_URL, cat, cat, alias)
                     res = prepare_dict(url)
+                    if not res:
+                        import ipdb; ipdb.set_trace()
+                        continue
                     res["title"] = title
                     res["id"] = normalize(title, max_length=200)
-                    res["category"] = cat
+                    res["category"] = row.find("catid").text
                     res["pub_date"] = pub_date
                     res["mod_date"] = mod_date
                     res["featured"] = featured
-                    res["hits"] = hits
+                    res["hits"] = row.find("hits").text
                     save_json(export_path, res)
 
         break

@@ -52,10 +52,14 @@ class Source(object):
                 metadata = json.loads(input_data)
                 res['_type'] = u"News Item"
                 res['_path'] = u"/news/" + metadata["id"]
+                res['subjects'] = metadata["category"]
+                res['featured'] = metadata["featured"]
                 res["title"] = unicode(metadata["title"])
                 res["text"] = unicode(metadata["text"])
-                res["date"] = datetime.strptime(metadata["date"],
-                                                '%Y-%m-%d %H:%M:%S')
+                res["pub_date"] = datetime.strptime(metadata["pub_date"],
+                                                    '%Y-%m-%d %H:%M:%S')
+                res["mod_date"] = datetime.strptime(metadata["mod_date"],
+                                                    '%Y-%m-%d %H:%M:%S')
                 for image in metadata["images"]:
                     data = None
                     url = image["src"]
@@ -64,9 +68,10 @@ class Source(object):
                         req.raise_for_status()
                     except:
                         logger.warning("Found a broken image in '%s'", url)
-                        return
+                        continue
                     data = req.content
                     filename = url.split("/")[-1]
                     res['image'] = {"data": data, "filename": filename}
+                    break
 
                 yield res
