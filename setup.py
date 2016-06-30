@@ -43,7 +43,7 @@ setup(
         'requests',
         'BeautifulSoup',
         'collective.transmogrifier',
-        'plone.app.transmogrifier',
+        'plone.app.transmogrifier>=1.4',
         'transmogrify.dexterity',
         'transmogrify.htmlcontentextractor',
         'transmogrify.webcrawler',
