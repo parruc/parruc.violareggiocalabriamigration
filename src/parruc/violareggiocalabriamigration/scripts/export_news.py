@@ -133,7 +133,7 @@ def export_news(offset, limit, force, export_path):
                         mod_date = pub_date
                     res = prepare_dict(url)
                     if not res:
-                        import ipdb; ipdb.set_trace()
+                        logger.warning("error for url %s" % url)
                         continue
                     res["title"] = title
                     res["id"] = normalize(title, max_length=200)
