@@ -51,7 +51,7 @@ class Source(object):
                     input_data = input_file.read()
                 metadata = json.loads(input_data)
                 res['_type'] = u"News Item"
-                res['_path'] = u"/news/" + metadata["id"]
+                res['_path'] = u"/notizie/" + metadata["id"]
                 res['subjects'] = metadata["category"]
                 res['featured'] = metadata["featured"]
                 res["title"] = unicode(metadata["title"])
