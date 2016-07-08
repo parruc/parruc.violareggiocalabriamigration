@@ -39,8 +39,8 @@ class Source(object):
             raise ValueError("Directory %s does not exist" % self.directory)
         res = {}
         res['_type'] = u"Folder"
-        res['_path'] = u"/news"
-        res["title"] = u"News"
+        res['_path'] = u"/notizie"
+        res["title"] = u"Notizie"
         yield res
 
         for dir_path, dir_names, file_names in os.walk(self.directory):
