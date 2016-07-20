@@ -17,7 +17,7 @@ from plone.i18n.normalizer import idnormalizer
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("unibo.violareggiocalabriamigration.export")
 
-usage = "usage: %prog [options]"
+usage = "usage: %(prog)s [options]"
 parser = argparse.ArgumentParser(usage=usage, description=__doc__)
 parser.add_argument(
     "-p", "--path", type=str, dest="export_path", default="exported",
