@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
+from collective.transmogrifier.interfaces import ISection
+from collective.transmogrifier.interfaces import ISectionBlueprint
+from collective.transmogrifier.utils import resolvePackageReferenceOrFile
+from datetime import datetime
+from zope.interface import classProvides
+from zope.interface import implements
+
 import json
 import logging
 import os.path
-from datetime import datetime
-
 import requests
-from zope.interface import classProvides, implements
 
-from collective.transmogrifier.interfaces import ISection, ISectionBlueprint
-from collective.transmogrifier.utils import resolvePackageReferenceOrFile
 
 logger = logging.getLogger("unibo.violareggiocalabriamigration.import")
 logging.basicConfig(level=logging.WARNING)
@@ -39,8 +41,8 @@ class Source(object):
             raise ValueError("Directory %s does not exist" % self.directory)
         res = {}
         res['_type'] = u"Folder"
-        res['_path'] = u"/notizie"
-        res["title"] = u"Notizie"
+        res['_path'] = u"/news"
+        res["title"] = u"News"
         yield res
 
         for dir_path, dir_names, file_names in os.walk(self.directory):
@@ -51,7 +53,7 @@ class Source(object):
                     input_data = input_file.read()
                 metadata = json.loads(input_data)
                 res['_type'] = u"News Item"
-                res['_path'] = u"/notizie/" + metadata["id"]
+                res['_path'] = u"/news/" + metadata["id"]
                 res['subjects'] = metadata["category"]
                 res['featured'] = metadata["featured"]
                 res["title"] = unicode(metadata["title"])
